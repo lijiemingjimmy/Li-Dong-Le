@@ -1,0 +1,56 @@
+name: ldl-automation
+services:
+  android:
+    image: ${COMPOSE_PROJECT_NAME:-ldl-automation}-android:local
+    build:
+      context: .
+      dockerfile: Dockerfile.android
+      args:
+        REDROID_IMAGE: ${REDROID_IMAGE:-redroid/redroid:13.0.0_64only-latest@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b}
+    privileged: true
+    restart: unless-stopped
+    command:
+      - androidboot.use_memfd=1
+      - androidboot.redroid_gpu_mode=guest
+      - androidboot.redroid_width=720
+      - androidboot.redroid_height=1280
+      - androidboot.redroid_dpi=240
+      - androidboot.redroid_fps=10
+      - androidboot.redroid_net_ndns=2
+      - androidboot.redroid_net_dns1=${ANDROID_DNS_1:-223.5.5.5}
+      - androidboot.redroid_net_dns2=${ANDROID_DNS_2:-1.1.1.1}
+      - ro.secure=0
+    volumes:
+      - ${LDL_DATA_DIR:-../ldl-automation-data}/android:/data
+    healthcheck:
+      test: [CMD, /system/bin/sh, -c, "[ \"$(getprop sys.boot_completed)\" = 1 ]"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+  controller:
+    image: ${COMPOSE_PROJECT_NAME:-ldl-automation}-controller:local
+    build:
+      context: .
+      args:
+        DEBIAN_MIRROR: ${DEBIAN_MIRROR:-deb.debian.org}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:${UI_PORT:-6080}:6080
+    depends_on:
+      android:
+        condition: service_healthy
+    environment:
+      ADB_TARGET: android:5555
+      FRIDA_TARGET: android:27042
+      LDL_STATE_DIR: /data/state
+      LDL_HTTPS_PROXY: ${LDL_HTTPS_PROXY:-}
+    volumes:
+      - ${LDL_DATA_DIR:-../ldl-automation-data}/controller:/data
+      - ${LDL_APK_DIR:-./apks}:/apks:ro
+    healthcheck:
+      test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6080/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

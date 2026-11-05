@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+cd -- "$(dirname -- "$0")"
+if [ "${1:-}" = doctor ]; then
+    exec sh deploy/doctor.sh
+fi
+exec docker compose exec -T controller python3 /app/controller.py "$@"

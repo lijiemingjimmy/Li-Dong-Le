@@ -1,0 +1,15 @@
+*
+!Dockerfile
+!Dockerfile.android
+!LICENSE
+!THIRD_PARTY.md
+!deploy/
+!deploy/guard_init.py
+!deploy/fetch_frida.py
+!deploy/ldl-netcompat.rc
+!app/
+!app/*.py
+!web/
+!web/index.html
+!web/app.js
+!web/style.css

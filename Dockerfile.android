@@ -1,0 +1,19 @@
+ARG REDROID_IMAGE=redroid/redroid:13.0.0_64only-latest@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b
+FROM ${REDROID_IMAGE} AS upstream
+FROM python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f AS guard
+ARG TARGETARCH
+ARG FRIDA_ASSET_BASE=https://github.com/frida/frida/releases/download/16.7.19
+ARG FRIDA_LICENSE_BASE
+COPY --from=upstream /system/etc/init/ /work/system-init/
+COPY --from=upstream /vendor/etc/init/ /work/vendor-init/
+COPY deploy/guard_init.py /guard_init.py
+RUN python3 /guard_init.py /work/system-init /work/vendor-init
+COPY deploy/fetch_frida.py /fetch_frida.py
+RUN python3 /fetch_frida.py "$TARGETARCH"
+FROM upstream
+COPY --from=guard /work/system-init/ /system/etc/init/
+COPY --from=guard /work/vendor-init/ /vendor/etc/init/
+COPY LICENSE THIRD_PARTY.md /licenses/
+COPY --from=guard /work/frida-server /system/bin/ldl-frida-server
+COPY --from=guard /work/frida-licenses/ /licenses/frida/
+COPY --chmod=0644 deploy/ldl-netcompat.rc /system/etc/init/ldl-netcompat.rc

@@ -1,0 +1,7 @@
+service ldl-netcompat /system/bin/ldl-frida-server --listen=0.0.0.0:27042
+    class late_start
+    user root
+    group root
+    capabilities SYS_PTRACE DAC_OVERRIDE DAC_READ_SEARCH KILL SYS_RESOURCE
+    seclabel u:r:shell:s0
+    disabled
