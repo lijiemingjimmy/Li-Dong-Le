@@ -6,10 +6,15 @@ from pathlib import Path
 import sys
 import urllib.request
 
-if sys.argv[1] != 'arm64':
-    raise SystemExit('This release supports ARM64 only; other Android ABIs need validation.')
+assets = {
+    'arm64': ('arm64', '36ec3d7474b1ac69c4e7ec985612fae771d37ffb71cb94858bc6978f69f5e581'),
+    'amd64': ('x86_64', '4bc938db27cbe1fec859e28f6bd34d269995a719de2f10e97e28c1bdcd9416c7'),
+}
+if sys.argv[1] not in assets:
+    raise SystemExit('Supported Docker architectures: arm64, amd64.')
+abi, checksum = assets[sys.argv[1]]
 version = '16.7.19'
-filename = f'frida-server-{version}-android-arm64.xz'
+filename = f'frida-server-{version}-android-{abi}.xz'
 base = os.environ.get('FRIDA_ASSET_BASE', f'https://github.com/frida/frida/releases/download/{version}').rstrip('/')
 license_override = os.environ.get('FRIDA_LICENSE_BASE')
 license_base = (license_override or f'https://raw.githubusercontent.com/frida/frida/{version}').rstrip('/')
@@ -22,7 +27,7 @@ def fetch(url):
 
 
 archive = fetch(base + '/' + filename)
-if hashlib.sha256(archive).hexdigest() != '36ec3d7474b1ac69c4e7ec985612fae771d37ffb71cb94858bc6978f69f5e581':
+if hashlib.sha256(archive).hexdigest() != checksum:
     raise SystemExit('Upstream Frida server checksum mismatch')
 binary = Path('/work/frida-server')
 binary.write_bytes(lzma.decompress(archive))

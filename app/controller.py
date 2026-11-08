@@ -29,6 +29,10 @@ import net_compat
 LOCK = threading.Lock()
 CACHE = (0, b'')
 KEYS = {'back': 4, 'home': 3, 'recent': 187, 'enter': 66, 'delete': 67, 'wake': 224}
+APP_ACTIVITIES = {
+    'open-wechat': 'com.tencent.mm/.ui.LauncherUI',
+    'open-ldl': 'cn.ledongli.ldl/.activity.SplashScreenActivity',
+}
 WEB = Path('/web')
 CONFIG = workflow.BASE / 'config.json'
 
@@ -205,7 +209,10 @@ class Handler(BaseHTTPRequestHandler):
             action = value.get('action')
             frame = screen()
             width, height = struct.unpack('>II', frame[16:24])
-            if action == 'tap':
+            if action in APP_ACTIVITIES:
+                device.shell('input', 'keyevent', 'KEYCODE_WAKEUP')
+                args = ['am', 'start', '-W', '-n', APP_ACTIVITIES[action]]
+            elif action == 'tap':
                 args = ['input', 'tap', coordinate(value['x'], width), coordinate(value['y'], height)]
             elif action == 'swipe':
                 args = ['input', 'swipe', coordinate(value['x'], width), coordinate(value['y'], height),

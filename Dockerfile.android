@@ -1,6 +1,7 @@
-ARG REDROID_IMAGE=redroid/redroid:13.0.0_64only-latest@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b
+ARG REDROID_IMAGE=erstt/redroid@sha256:7c1f4355fa245e55cc15fa46ff3be8c347cee73c3eeb5c8b7a6def93013eb54d
+ARG PYTHON_IMAGE=python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f
 FROM ${REDROID_IMAGE} AS upstream
-FROM python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f AS guard
+FROM ${PYTHON_IMAGE} AS guard
 ARG TARGETARCH
 ARG FRIDA_ASSET_BASE=https://github.com/frida/frida/releases/download/16.7.19
 ARG FRIDA_LICENSE_BASE

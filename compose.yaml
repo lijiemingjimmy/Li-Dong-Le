@@ -1,12 +1,16 @@
-name: ldl-automation
+name: li-dong-le
 services:
   android:
-    image: ${COMPOSE_PROJECT_NAME:-ldl-automation}-android:local
+    platform: linux/amd64
+    cpus: ${ANDROID_CPUS:-4}
+    mem_limit: ${ANDROID_MEMORY:-6g}
+    image: ${COMPOSE_PROJECT_NAME:-li-dong-le}-android:local
     build:
       context: .
       dockerfile: Dockerfile.android
       args:
-        REDROID_IMAGE: ${REDROID_IMAGE:-redroid/redroid:13.0.0_64only-latest@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b}
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f}
+        REDROID_IMAGE: ${REDROID_IMAGE:-erstt/redroid@sha256:7c1f4355fa245e55cc15fa46ff3be8c347cee73c3eeb5c8b7a6def93013eb54d}
     privileged: true
     restart: unless-stopped
     command:
@@ -20,8 +24,10 @@ services:
       - androidboot.redroid_net_dns1=${ANDROID_DNS_1:-223.5.5.5}
       - androidboot.redroid_net_dns2=${ANDROID_DNS_2:-1.1.1.1}
       - ro.secure=0
+      - ro.dalvik.vm.native.bridge=libhoudini.so
+      - ro.enable.native.bridge.exec64=1
     volumes:
-      - ${LDL_DATA_DIR:-../ldl-automation-data}/android:/data
+      - ${LDL_DATA_DIR:-../li-dong-le-data}/android:/data
     healthcheck:
       test: [CMD, /system/bin/sh, -c, "[ \"$(getprop sys.boot_completed)\" = 1 ]"]
       interval: 10s
@@ -29,10 +35,14 @@ services:
       retries: 18
       start_period: 30s
   controller:
-    image: ${COMPOSE_PROJECT_NAME:-ldl-automation}-controller:local
+    platform: linux/amd64
+    cpus: 2
+    mem_limit: 1g
+    image: ${COMPOSE_PROJECT_NAME:-li-dong-le}-controller:local
     build:
       context: .
       args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.13-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f}
         DEBIAN_MIRROR: ${DEBIAN_MIRROR:-deb.debian.org}
         PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
     restart: unless-stopped
@@ -45,9 +55,10 @@ services:
       ADB_TARGET: android:5555
       FRIDA_TARGET: android:27042
       LDL_STATE_DIR: /data/state
+      LDL_WECHAT_APK: wechat-official-arm32.apk
       LDL_HTTPS_PROXY: ${LDL_HTTPS_PROXY:-}
     volumes:
-      - ${LDL_DATA_DIR:-../ldl-automation-data}/controller:/data
+      - ${LDL_DATA_DIR:-../li-dong-le-data}/controller:/data
       - ${LDL_APK_DIR:-./apks}:/apks:ro
     healthcheck:
       test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6080/health', timeout=3)"]

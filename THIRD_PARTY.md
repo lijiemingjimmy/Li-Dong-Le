@@ -1,19 +1,16 @@
-# 第三方组件
+# 第三方组件与上游来源
 
-本项目自己编写的控制代码按 MIT 发布。以下运行时组件由各自上游提供，保留各自许可；其源码和二进制在构建或部署时获取，不放入Git仓库。
+本仓库的控制代码沿用上游 MIT 许可，保留原始版权声明。x86 适配基于 [wkj2333666/Li-Dong-Le](https://github.com/wkj2333666/Li-Dong-Le)，上游基线提交为 `f68b48f32f088253be648deca4528f16340f8434`。
 
-| 组件 | 用途 | 上游 |
-|---|---|---|
-| Redroid / Android | 容器内 Android；Android init 配置在构建时局部修改 | https://github.com/remote-android/redroid-doc |
-| Python | 控制服务及脚本运行时 | https://www.python.org/psf/license/ |
-| Debian adb、tzdata、ca-certificates | ADB、时区、TLS证书 | https://packages.debian.org/ |
-| Docker Engine / Compose | 构建、容器编排 | https://github.com/docker/compose |
-| Frida 16.7.19 | 仅修正客户端对已连接Ethernet的网络可用性误判 | https://github.com/frida/frida/tree/16.7.19 |
+| 组件 | 来源及说明 |
+|---|---|
+| Redroid / Android | [remote-android/redroid-doc](https://github.com/remote-android/redroid-doc)，多种上游许可；构建时保留镜像已有许可文件 |
+| Android 12 / Houdini WSA 镜像 | [ERSTT/redroid](https://github.com/ERSTT/redroid)，`erstt/redroid@sha256:7c1f4355fa245e55cc15fa46ff3be8c347cee73c3eeb5c8b7a6def93013eb54d`；含专有转译运行时，部署时从提供者拉取 |
+| Frida 16.7.19 | [官方发布](https://github.com/frida/frida/releases/tag/16.7.19)，wxWindows Library Licence / LGPL 相关条款；未修改二进制，下载后校验，许可随镜像保存在 `/licenses/frida/` |
+| Python / Debian 软件包 | [Python](https://www.python.org/psf/license/)；Debian `adb`、`tzdata`、`ca-certificates` 各自许可 |
+| 乐动力 10.14.2 | 原版 APK 从上游固定提交单独下载；非本项目 MIT 许可覆盖 |
+| 微信 8.0.42 ARM32 | [腾讯官网](https://weixin.qq.com/)提供的兼容包，从腾讯 CDN 单独下载；非本项目 MIT 许可覆盖 |
 
-Redroid 的许可说明见其官方 README；Android 及其依赖包含多种开源许可。Docker 构建保留上游镜像中的第三方许可文件，不将这些组件重新许可为 MIT。
+源码包和本次 Release 不再附带第三方 APK、转译库或 Android 镜像。Git 历史保留上游最初的 APK Git LFS 指针。下载 URL 与 SHA256 见 `apks/manifest.json`，不能把本项目的代码许可理解为第三方二进制的再分发授权。
 
-Frida保留其wxWindows Library Licence及LGPL例外条款，许可证随Android镜像放在`/licenses/`。服务器二进制从固定上游版本下载，不放入Git仓库。本项目不修改Frida本身。
-
-仓库通过Git LFS保存`apks/ledongli.apk`（乐动力10.14.2）和`apks/wechat.apk`（微信8.0.79），均为未修改的原始安装包。它们由Compose只读挂载供安装，不进入Docker构建上下文或控制镜像。校验值见`apks/SHA256SUMS`。
-
-第三方APK的版权及使用条款归各自权利人所有，不属于本项目MIT许可证的授权范围。本项目与这些应用的运营方没有隶属关系；原始安装包不包含部署者的账号、登录态或作业运行数据。
+本项目与上述第三方应用运营者无隶属关系。公共代码中的应用标识符和 appKey 来自应用协议，并非用户账号凭据；用户令牌、Cookie 和账号数据只应存放在私有数据目录。

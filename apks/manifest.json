@@ -1,0 +1,14 @@
+[
+  {
+    "filename": "ledongli.apk",
+    "version": "10.14.2 (10092), arm64-v8a",
+    "url": "https://media.githubusercontent.com/media/wkj2333666/Li-Dong-Le/f68b48f32f088253be648deca4528f16340f8434/apks/ledongli.apk",
+    "sha256": "ce98b891939de3f4c426e172e24f3a37a331f2bb7446445d069f6d75d0c99a10"
+  },
+  {
+    "filename": "wechat-official-arm32.apk",
+    "version": "8.0.42 (2460), armeabi-v7a",
+    "url": "https://dldir1.qq.com/weixin/android/weixin8042android2460.apk",
+    "sha256": "c5e01d8fd9786d153ec4bfaef6ab28d1a754e299506bf74033c790b694333d18"
+  }
+]

@@ -48,9 +48,15 @@ def binary(*args):
 
 
 def install_apks():
+    wechat = os.environ.get('LDL_WECHAT_APK', 'wechat.apk')
+    if Path(wechat).name != wechat or not wechat.endswith('.apk'):
+        raise ValueError('invalid_wechat_apk_filename')
+    for name in ('ledongli.apk', wechat):
+        if not (Path('/apks') / name).is_file():
+            raise FileNotFoundError('required_apk_missing: ' + name)
     wait_boot()
     installed = []
-    for name in ('webview.apk', 'ledongli.apk', 'wechat.apk'):
+    for name in ('webview.apk', 'ledongli.apk', wechat):
         path = Path('/apks') / name
         if path.is_file():
             result = adb('install', '-r', str(path), timeout=180)

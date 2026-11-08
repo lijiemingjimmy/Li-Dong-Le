@@ -3,6 +3,8 @@
 <title>Android 远程操作</title><link rel="stylesheet" href="/style.css">
 <main><header><strong>Android 远程操作</strong><span id="status">正在连接…</span></header>
 <p class="hint">点击画面操作，拖动滑动。画面约每秒更新一次。</p>
+<nav aria-label="打开应用"><button data-action="open-wechat">打开微信</button><button data-action="open-ldl">打开乐动力</button></nav>
+<p class="hint">先在微信中登录，再打开乐动力选择微信登录并授权。手机号、密码和验证码直接在下方画面中填写。</p>
 <div id="display"><img id="screen" alt="Android 画面" draggable="false"></div>
 <nav><button data-action="wake">唤醒</button><button data-action="back">返回</button><button data-action="home">主屏幕</button><button data-action="recent">最近任务</button></nav>
 <form id="typing"><input id="text" type="password" placeholder="先点 Android 输入框，再在此输入" aria-label="发送至 Android 的文字" autocomplete="off" maxlength="256"><button>输入</button></form>
