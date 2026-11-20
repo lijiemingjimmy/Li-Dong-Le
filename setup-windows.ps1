@@ -1,5 +1,8 @@
 $ErrorActionPreference = 'Stop'
 $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } elseif ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { Join-Path $env:LOCALAPPDATA 'Android\Sdk' }
+$env:ANDROID_SDK_ROOT = $sdk
+$env:ANDROID_HOME = $sdk
+$env:Path = (Join-Path $sdk 'platform-tools') + ';' + (Join-Path $sdk 'emulator') + ';' + $env:Path
 $sdkmanager = Join-Path $sdk 'cmdline-tools\latest\bin\sdkmanager.bat'
 $avdmanager = Join-Path $sdk 'cmdline-tools\latest\bin\avdmanager.bat'
 if (!(Test-Path $sdkmanager) -or !(Test-Path $avdmanager)) { throw 'Install Android SDK Command-line Tools first.' }
