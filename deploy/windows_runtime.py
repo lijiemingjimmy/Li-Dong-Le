@@ -23,7 +23,7 @@ os.environ.update(
     ADB_TARGET=SERIAL, FRIDA_TARGET='127.0.0.1:27042',
     LDL_STATE_DIR=str(ROOT / 'private' / 'state'), LDL_NATIVE_EMULATOR='1',
     LDL_WEB_DIR=str(ROOT / 'web'), LDL_APK_DIR=str(ROOT / 'apks'),
-    LDL_WECHAT_APK='wechat.apk', LDL_LISTEN_HOST='127.0.0.1',
+    LDL_WECHAT_APK='wechat-official-arm32.apk', LDL_LISTEN_HOST='127.0.0.1',
     LDL_LISTEN_PORT=str(PORT), PYTHONDONTWRITEBYTECODE='1',
     SSL_CERT_FILE=certifi.where(),
 )

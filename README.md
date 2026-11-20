@@ -1,136 +1,127 @@
-# Li-Dong-Le · x86_64
+# Li-Dong-Le
 
-在 **x86_64 Linux** 上运行乐动力 Android 客户端和浏览器控制台。基于 [wkj2333666/Li-Dong-Le](https://github.com/wkj2333666/Li-Dong-Le) 的 x86 适配版本，使用 Android 12 + Houdini，提供登录、账号初始化、作业读取与手动执行入口。
+乐动力 Android 客户端的本机自动化运行方案。项目保留上游 MIT 代码署名，提供 Windows x86_64、x86_64 Linux 两条部署路线；源码不包含 APK、登录态、Cookie 或运行回执。
 
-**v0.1.0：已在一台 AMD x86_64 Linux 主机上验证构建、安装、本人登录、账号初始化，以及一次手动上传、作业关联和服务端回查。** 这是特定版本组合的兼容性结果，不代表所有设备和账号都适用。
+## 先选运行方式
 
-## 工作方式
+| 平台 | 推荐路线 | 入口 | 说明 |
+|---|---|---|---|
+| Windows 10/11 x86_64 | Android Emulator + WHPX | `ldl-windows.ps1` | 适合普通 Windows 电脑，不需要 Docker |
+| x86_64 Linux | Docker + Android 12/Houdini | `ldl` | 已在特定 AMD Linux 主机验证 |
 
-```text
-浏览器 → SSH 转发 → 127.0.0.1:6080 控制台
-                          ↓ ADB / Frida（私有容器网络）
-                  Android 12 x86_64 + Houdini
-                     ├─ 乐动力 10.14.2 ARM64
-                     └─ 微信 8.0.42 ARM32
+Windows 是当前主页推荐路线。Android 官方说明 API 30 x86_64 模拟器支持 ARMv7/ARM64 应用，Windows 使用 WHPX 加速：[ARM ABI 支持](https://developer.android.com/studio/releases/emulator)、[WHPX 配置](https://developer.android.com/studio/run/emulator-acceleration)。
+
+## Windows 快速开始
+
+完整步骤见 [Windows 文档目录](docs/README.md)。第一次安装在 PowerShell 中执行：
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup-windows.ps1
+py -3 deploy\fetch_apks.py
+py -3 deploy\fetch_apks.py --verify-only
+.\ldl-windows.ps1 start
+.\ldl-windows.ps1 install-apks
+.\ldl-windows.ps1 compatibility
+.\ldl-windows.ps1 open-app
 ```
 
-Android 和 Python 控制服务原生运行在 x86_64 上，APK 中的 ARM 库通过 Houdini 执行。APK 保持原样；此仓库没有第三方应用源码，也没有将 APK 重新编译或签名。
+在 Android 模拟器或本地控制台登录微信和乐动力：
 
-`run` 按配置生成运动摘要并上传，再关联到当前账号的作业，**会实际写入账号记录**。`check` 只查询资格，`plan` 只生成预览。默认不启用定时执行。
+<http://127.0.0.1:16081/>
 
-## 运行条件
+然后初始化并检查：
 
-- x86_64 Linux，Docker Engine、Docker Compose v2，Python 3.10+。
-- 4 KiB 内核页，`binderfs`、`memfd`、IPv6、`/dev/dma_heap/system`。
-- 建议至少 8 GiB 可用内存和 15 GiB 磁盘空间。默认 Android 上限 6 GiB / 4 CPU，控制器上限 1 GiB / 2 CPU，可在 `.env` 调整 Android 限额。
-- Docker 需能运行 `privileged` Android 容器；首次登录需要用户本人操作。
+```powershell
+.\ldl-windows.ps1 setup
+.\ldl-windows.ps1 check
+.\ldl-windows.ps1 status
+```
 
-Mac 可用于浏览器操作和 SSH 转发；本版本的 Android 宿主要求 Linux。ARM64 部署请参考上游仓库。
+手动执行一次：
 
-## 快速开始
+```powershell
+.\ldl-windows.ps1 plan
+.\ldl-windows.ps1 run --now
+```
 
-### 1. 获取代码与安装包
+`run` 会实际写入账号记录。只有上传后独立回查到距离、时长和作业次数都匹配，才会标记为完成。当天已完成、服务端限额已达、存在未决回执或账号未登录时，脚本会停止，不会强制重试。
+
+## Windows 文档
+
+- [文档总目录](docs/README.md)
+- [环境准备和 AVD 初始化](docs/WINDOWS-SETUP.md)
+- [启动、登录、初始化和执行](docs/WINDOWS-OPERATIONS.md)
+- [数据、备份、迁移和删除](docs/WINDOWS-DATA.md)
+- [排错](docs/WINDOWS-TROUBLESHOOTING.md)
+- [通用运维和回执规则](docs/OPERATIONS.md)
+- [验证记录与限制](docs/VALIDATION.md)
+
+Windows 运行组件：
+
+- Android 11 / API 30 Google APIs x86_64 AVD：`ldl_win_x64`
+- Windows Hypervisor Platform（WHPX）
+- ADB 设备：`emulator-5556`
+- Frida 16.7.19 Android x86_64 server
+- 本地控制台：`127.0.0.1:16081`
+
+Google Play 镜像不支持 `adb root`，Windows 方案必须使用 Google APIs x86_64 镜像。Windows ARM 主机不在当前验证范围内。
+
+## Linux Docker 快速开始
+
+Linux 路线保留原有 x86_64 容器部署：
 
 ```sh
-git clone https://github.com/lijiemingjimmy/Li-Dong-Le.git
-cd Li-Dong-Le
 cp .env.example .env
 python3 deploy/fetch_apks.py
 python3 deploy/fetch_apks.py --verify-only
-```
-
-也可以解压 Release 的源码包。**本版本无需 Git LFS**；仓库和 Release 不附带 APK、转译库、账号状态或运行数据。下载脚本使用 [固定来源与 SHA256](apks/manifest.json)，校验失败时不会替换原有文件。乐动力包来自上游固定提交，微信兼容包来自腾讯官方 CDN。
-
-### 2. 检查宿主并启动
-
-```sh
-# 内核已提供 binder_linux 模块时，由管理员加载：
 sudo modprobe binder_linux
 ./ldl doctor
 docker compose up -d --build
-docker compose ps
 ./ldl install-apks
 ./ldl compatibility
 ./ldl open-app
 ```
 
-`doctor` 只检查，不安装内核模块或修改系统配置。缺少内核功能时先处理宿主环境，参见 [故障排查](docs/TROUBLESHOOTING.md)。项目会在 Android 镜像构建时移除 init 对宿主全局 sysctl 的写入。
-
-### 3. 打开控制台并本人登录
-
-服务器本机访问 `http://127.0.0.1:6080`。远程服务器可从自己的电脑运行：
+远程 Linux 主机的控制台只监听宿主回环地址，可通过 SSH 转发访问：
 
 ```sh
 ssh -N -L 16080:127.0.0.1:6080 your-user@your-server
 ```
 
-然后在这台电脑打开 `http://127.0.0.1:16080`：
+然后访问 <http://127.0.0.1:16080/>。Linux 详细说明见 [运维文档](docs/OPERATIONS.md) 和 [排错文档](docs/TROUBLESHOOTING.md)。
 
-1. 点击 **打开微信**，本人完成登录。可以在微信右上角选择简体中文。
-2. 点击 **打开乐动力**，本人确认首次协议，选择微信登录并授权。
-3. 点击 Android 画面的输入框后，可用网页底部输入栏发送英文、数字和符号；中文可用 Android 键盘。
+## 数据与安全
 
-控制台只监听宿主回环地址并校验 Host/Origin。ADB 和 Frida 端口不对宿主发布。首次安装页面、控制台健康状态都不能代表账号登录成功。
+私有运行数据包括 Android 应用数据、账号凭据、Cookie、作业绑定、每日回执和日志。Windows 默认在仓库下的 `private\` 和 `runtime\`，Linux 默认在仓库旁的 `../li-dong-le-data/`。这些目录已被 Git 忽略。
 
-### 4. 初始化并只读检查
+不要提交以下内容：
 
-```sh
-./ldl setup
-./ldl status
-./ldl check
-./ldl plan
-```
+- APK、Frida 二进制和运行日志
+- `private/`、`runtime/`、`.env`
+- 登录二维码、Cookie、Token、截图和服务器返回的个人数据
 
-`setup` 从本人刚登录的 Android 实例读取登录态，发现用户、班级和任务绑定，写入私有配置。`check` 返回当前服务端资格；今天已完成时会跳过。`plan` 输出的随机预览与随后实际执行的随机值可能不同。
+控制台、ADB 和 Frida 默认只监听本机回环地址。不要把 16081、6080、27042 或 ADB 端口暴露到公网。
 
-### 5. 手动执行一次
+## 执行规则
 
-```sh
-./ldl run --now
-./ldl status
-```
+- `check` 只查询服务端资格。
+- `plan` 只生成参数预览。
+- `run --now` 才会提交一次记录。
+- 每个北京时间日期本地最多提交一次，服务端每日和每周限制仍然有效。
+- `uncertain`、`awaiting_confirmation`、`needs_review` 必须先回查，不能删除回执来重试。
+- 控制器内置定时默认关闭，避免和外部调度重复。
 
-该命令会提交记录。默认距离 3050–3300 米、用时 1050–1110 秒，并校验配速、作业日期、完整时段和服务端限额。配置不符合当前作业要求会停止。
-
-不带 `--now` 的 `./ldl run` 会在执行前随机等待最多 20 分钟。每次写入前保存本地回执；出现响应丢失或不确定结果时停止重发。只有服务端距离、用时匹配并且作业计数增加，才标记 `completed`。
-
-本地同一北京时间日期最多完成一次；服务端的每日、每周和任务限制仍以当前账号的作业规则为准。遇到 `uncertain` 或 `needs_review` 应先回查记录，不要删除当日回执来重试。
-
-## 数据、定时与维护
-
-数据默认在仓库旁的 `../li-dong-le-data/`，包括 Android 数据、凭据、Cookie、账号绑定和私有回执；不要把此目录、`.env` 或运行截图上传到仓库。
-
-```sh
-docker compose down             # 停止，保留数据
-docker compose up -d --no-build  # 使用现有镜像启动
-```
-
-定时执行默认关闭；只有显式执行 `./ldl schedule-on` 或 `./ldl setup --enable-schedule` 才开启。`./ldl schedule-off` 关闭。默认时间为北京时间 15:00，加 0–20 分钟随机延迟；具体要求和配置见 [运维说明](docs/OPERATIONS.md)。
-
-## 为什么使用这个版本组合
-
-| 组件 | 固定版本 |
-|---|---|
-| Android / 转译 | Android 12 + Houdini WSA，固定镜像摘要 |
-| 乐动力 | 10.14.2 / versionCode 10092 / ARM64 |
-| 微信 | 腾讯官方兼容包 8.0.42 / versionCode 2460 / ARM32 |
-| Frida | 16.7.19 / Android x86_64 |
-
-实测原 Android 13 NDK 转译层无法稳定运行仓库附带的 ARM64 微信；匹配 Android 12 的 Houdini 配合 ARM32 微信通过了本次验证。微信兼容包版本较旧，后续登录可用性取决于应用服务端。详见 [验证记录与限制](docs/VALIDATION.md)。
-
-## 开发与发行
+## 开发验证
 
 ```sh
 python3 -m unittest discover -s tests -v
 python3 -m compileall -q app deploy
-sh -n ldl deploy/doctor.sh
-docker compose config --quiet
+git diff --check
 ```
 
-仓库包含 15 项离线测试，以及 [可选 GitHub Actions 模板](docs/ci.example.yml)。模板覆盖单元测试、语法、Compose 配置和发行文件检查，不登录账号或提交记录；需要时可复制到 `.github/workflows/ci.yml`。本次发布通过本地及 Linux 主机验证，未启用 GitHub Actions。Release 附源码包及 `SHA256SUMS`，不提供含个人状态的镜像。
+当前 Windows 代码已通过 Python 编译、15 项离线测试和 Markdown 本地链接检查；尚未在实际 Windows x86_64 主机上完成登录与提交端到端验证。
 
 ## 来源与许可
 
-保留上游 MIT 许可和署名，基于提交 `f68b48f32f088253be648deca4528f16340f8434` 适配。Houdini、Android、Frida、APK 等保留各自许可，不属于本项目 MIT 授权范围。见 [LICENSE](LICENSE)、[THIRD_PARTY.md](THIRD_PARTY.md) 和 [CHANGELOG.md](CHANGELOG.md)。
-
-Windows x86_64 本机运行见 [Windows 说明](docs/WINDOWS.md)，完整分步文档从 [docs/README.md](docs/README.md) 开始。它使用 Android 11 x86_64 Google APIs 模拟器和 WHPX 运行 ARM APK，不连接 descfly，也不依赖 Docker。
+项目基于上游提交 `f68b48f32f088253be648deca4528f16340f8434` 适配。Houdini、Android、Frida 和第三方 APK 保留各自许可，不属于本项目 MIT 授权范围。详见 [LICENSE](LICENSE)、[THIRD_PARTY.md](THIRD_PARTY.md) 和 [CHANGELOG.md](CHANGELOG.md)。
