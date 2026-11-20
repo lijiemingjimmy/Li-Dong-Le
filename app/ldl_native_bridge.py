@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Invoke the signed-in app's native bridge over a loopback ADB forward."""
 import argparse
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows
+    import windows_lock as fcntl
 import os
 from pathlib import Path
 import subprocess

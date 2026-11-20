@@ -2,7 +2,10 @@
 """Run the pinned LDL homework workflow, with daily guards and private receipts."""
 import argparse
 from datetime import datetime, timedelta
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows
+    import windows_lock as fcntl
 import json
 import math
 import os

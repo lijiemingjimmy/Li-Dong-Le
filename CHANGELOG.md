@@ -1,5 +1,9 @@
 # 更新记录
 
+## Unreleased
+
+- 增加 Windows x86_64 本机运行方案：Android 11 Google APIs AVD、WHPX、PowerShell/CMD 入口、Windows 文件锁兼容，以及分开的安装、操作、数据和排错文档。
+
 ## v0.1.0 — 2026-11-08
 
 首个 x86_64 发行版，基于上游 `f68b48f`。
