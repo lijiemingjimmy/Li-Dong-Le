@@ -132,3 +132,5 @@ docker compose config --quiet
 ## 来源与许可
 
 保留上游 MIT 许可和署名，基于提交 `f68b48f32f088253be648deca4528f16340f8434` 适配。Houdini、Android、Frida、APK 等保留各自许可，不属于本项目 MIT 授权范围。见 [LICENSE](LICENSE)、[THIRD_PARTY.md](THIRD_PARTY.md) 和 [CHANGELOG.md](CHANGELOG.md)。
+
+Windows x86_64 本机运行见 [Windows 说明](docs/WINDOWS.md)。它使用 Android 11 x86_64 Google APIs 模拟器和 WHPX 运行 ARM APK，不连接 descfly，也不依赖 Docker。

@@ -18,7 +18,8 @@ def adb(*args, timeout=30, binary=False):
 def connect(timeout=90):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        subprocess.run(['adb', 'connect', TARGET], capture_output=True, timeout=10)
+        if not TARGET.startswith('emulator-'):
+            subprocess.run(['adb', 'connect', TARGET], capture_output=True, timeout=10)
         try:
             if adb('get-state', timeout=5) == 'device':
                 return
@@ -48,16 +49,17 @@ def binary(*args):
 
 
 def install_apks():
+    apk_dir = Path(os.environ.get('LDL_APK_DIR', '/apks'))
     wechat = os.environ.get('LDL_WECHAT_APK', 'wechat.apk')
     if Path(wechat).name != wechat or not wechat.endswith('.apk'):
         raise ValueError('invalid_wechat_apk_filename')
     for name in ('ledongli.apk', wechat):
-        if not (Path('/apks') / name).is_file():
+        if not (apk_dir / name).is_file():
             raise FileNotFoundError('required_apk_missing: ' + name)
     wait_boot()
     installed = []
     for name in ('webview.apk', 'ledongli.apk', wechat):
-        path = Path('/apks') / name
+        path = apk_dir / name
         if path.is_file():
             result = adb('install', '-r', str(path), timeout=180)
             if 'Success' not in result:

@@ -40,7 +40,7 @@ def save_result(name, value):
             if os.path.exists(temporary):
                 os.unlink(temporary)
     owner = RUN_DIR.stat()
-    if os.geteuid() == 0:
+    if hasattr(os, 'geteuid') and os.geteuid() == 0:
         os.chown(RUN_DIR / name, owner.st_uid, owner.st_gid)
 
 
