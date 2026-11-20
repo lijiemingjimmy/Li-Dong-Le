@@ -41,7 +41,14 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 ```text
 apks\ledongli.apk
-apks\wechat.apk
+apks\wechat-official-arm32.apk
+```
+
+推荐直接下载并校验：
+
+```powershell
+py -3 deploy\fetch_apks.py
+py -3 deploy\fetch_apks.py --verify-only
 ```
 
 仓库忽略 APK 文件。不要把 APK、登录态、Cookie 或 `private\` 目录提交到 Git。
